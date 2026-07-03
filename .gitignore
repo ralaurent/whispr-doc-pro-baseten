@@ -1,0 +1,11 @@
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.next/
+.DS_Store
+.vercel
+
+# Ignore generated HTML files
+/public/html/
