@@ -421,6 +421,7 @@ export function PdfViewer({
 
   const [redoSigField, setRedoSigField] = useState<string | null>(null)
   const [acceptedPopoverField, setAcceptedPopoverField] = useState<string | null>(null)
+  const [isPopoversHidden, setIsPopoversHidden] = useState(false)
   const [pdfDocument, setPdfDocument] = useState<any>(null)
   const [highlightRects, setHighlightRects] = useState<HighlightRect[]>([])
 
@@ -580,6 +581,9 @@ export function PdfViewer({
   };
 
   const handleFocusField = useCallback((fieldName: string | null) => {
+    if (fieldName) {
+      setIsPopoversHidden(false);
+    }
     onFocusedFieldChange(fieldName);
     if (fieldName && detectionMode && onCancelDetectionMode) {
       onCancelDetectionMode();
@@ -1147,8 +1151,8 @@ export function PdfViewer({
     const isSelected = focusedFieldName === field.name
     const isAnySelected = focusedFieldName !== null
     const isUnsignedSignature = field.type === "signature" && !hasValue
-    const shouldShowPopover = (hasValue || isUnsignedSignature) && !isAccepted && (!isAnySelected || isSelected) && !detectionMode
-    const showAcceptedPopover = isAccepted && acceptedPopoverField === field.name
+    const shouldShowPopover = !isPopoversHidden && (hasValue || isUnsignedSignature) && !isAccepted && (!isAnySelected || isSelected) && !detectionMode
+    const showAcceptedPopover = !isPopoversHidden && isAccepted && acceptedPopoverField === field.name
     const isDragging = draggingField?.id === field.name;
     const isResizing = resizingField?.id === field.name;
 
@@ -1319,8 +1323,15 @@ export function PdfViewer({
         <div
           className="w-full flex justify-center flex-1"
           onClick={handleBackgroundClick}
+          onDoubleClick={() => setIsPopoversHidden(true)}
         >
-          <div className="relative shadow-xl bg-white" ref={pageRef} onClick={(e) => e.stopPropagation()}>
+          <div
+            className="relative shadow-xl bg-white"
+            ref={pageRef}
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsPopoversHidden(true)
+            }}>
             {fileSource ? (
               <Document
                 file={fileSource}
@@ -1422,3 +1433,4 @@ export function PdfViewer({
     </TooltipProvider>
   )
 }
+
