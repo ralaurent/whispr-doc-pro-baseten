@@ -9,6 +9,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@ai-sdk/baseten": "^2.0.5",
+    "@ai-sdk/openai": "^4.0.7",
     "@aws-sdk/client-dynamodb": "^3.1075.0",
     "@aws-sdk/lib-dynamodb": "^3.1075.0",
     "@aws-sdk/util-dynamodb": "^3.996.5",
@@ -51,6 +53,7 @@
     "@uppy/onedrive": "^5.1.0",
     "@uppy/react": "^5.2.0",
     "@vercel/analytics": "1.6.1",
+    "ai": "^7.0.14",
     "autoprefixer": "^10.4.20",
     "child_process": "^1.0.2",
     "class-variance-authority": "^0.7.1",
@@ -94,6 +97,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/react-speech-recognition": "^3.9.6",
+    "@types/validate-npm-package-name": "^4.0.2",
     "postcss": "^8.5",
     "shadcn": "^4.0.0",
     "tailwindcss": "^4.2.0",

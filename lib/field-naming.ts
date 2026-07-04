@@ -5,6 +5,7 @@ import { jsonrepair } from "jsonrepair"
 
 import { cleanInvalidPdfRefs, sanitizeFieldLabel, type DetectedField, type DetectionMode } from "./pdf-utils"
 import type { PageHtml } from "./extract-html"
+import { SIGNATURE_REGEX, DATE_REGEX } from "./regex"
 
 export interface ExtractedField {
   id: number
@@ -25,14 +26,156 @@ export interface PageInfo {
   height: number
 }
 
+// export async function nameFieldsFromHtml(htmlPages: PageHtml[]): Promise<Record<string, string>> {
+//   // Only send the first page to OpenRouter to save tokens/time
+//   const combined = htmlPages.length > 0
+//     ? `<!-- PAGE ${htmlPages[0].index} -->\n${htmlPages[0].html}`
+//     : ""
 
-export async function nameFieldsFromHtml(htmlPages: PageHtml[]): Promise<Record<string, string>> {
-  // Only send the first page to OpenRouter to save tokens/time
+//   const systemPrompt = `
+// You are an OCR and document-layout extraction expert.
+
+// Input:
+// - HTML representing one or more PDF pages.
+// - Every fillable field is a <div class="pdf-field"> with a unique data-field-id.
+// - Labels and surrounding text are rendered as absolutely-positioned <span class="pdf-text"> elements.
+
+// Your task is to assign a concise semantic name to EVERY field.
+
+// IMPORTANT:
+// Field labels are determined by PHYSICAL PROXIMITY, not HTML order.
+
+// Search priority (stop when a clear label is found):
+
+// 1. Immediately LEFT of the field (highest priority)
+// 2. Immediately ABOVE the field
+// 3. BELOW the field
+// 4. RIGHT of the field
+// 5. Nearby grouped text belonging to the same row/section
+// 6. Section headers only if no local label exists
+
+// Ignore text that is visually distant even if it appears nearby in the HTML.
+
+// Rules:
+
+// - The label should be close to the field.
+// - Prefer labels directly left or directly above.
+// - If none exist, search below only as a last resort.
+// - Never use page titles, instructions, paragraphs, or unrelated text if a nearby label exists.
+// - Checkbox fields should use the text immediately adjacent to that checkbox.
+// - If multiple fields share one label, generate distinct names (e.g. ssn_part_1, ssn_part_2, ssn_part_3).
+// - Preserve meaning (business_name, exempt_payee_code, employer_identification_number, etc.).
+// - Return one entry for EVERY data-field-id.
+// - Do not invent fields.
+// - Do not omit fields.
+// - Output must be deterministic.
+
+// Naming rules:
+
+// - snake_case
+// - lowercase only
+// - letters and underscores only
+// - concise (1-5 words)
+// - no spaces
+// - no punctuation
+// - no duplicate values
+
+// Return ONLY valid JSON.
+
+// Format:
+
+// {
+//   "1":"first_name",
+//   "2":"last_name",
+//   "3":"mailing_address"
+// }
+
+// No markdown.
+// No explanations.
+// No code fences.
+// Only the JSON object.
+// `;
+
+//   const payload = {
+//     model: "openrouter/free", //
+//     messages: [
+//       { role: "system", content: systemPrompt },
+//       { role: "user", content: combined },
+//     ],
+//     temperature: 0.1,
+//     response_format: { type: "json_object" },
+//   }
+
+//   console.log("=== SENDING HTML TO OPENROUTER ===");
+//   console.log(combined);
+//   console.log("==================================");
+
+//   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+//   const res = await fetch(`${baseUrl}/api/open-router`, {
+//       method: "POST",
+//       headers: {
+//           "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(payload),
+//   });
+
+//   if (!res.ok) {
+//       let errorData;
+//       try {
+//           errorData = await res.json();
+//       } catch {
+//           errorData = { error: await res.text() };
+//       }
+//       throw new Error(errorData.error || `API error: ${res.status} ${res.statusText}`);
+//   }
+
+//   const response = await res.json();
+//   const raw = response?.choices?.[0]?.message?.content ?? ""
+
+//   console.log("=== RECEIVED RAW JSON FROM OPENROUTER ===");
+//   console.log(raw);
+//   console.log("=========================================");
+
+//   let parsed: any
+//   try {
+//     parsed = JSON.parse(raw)
+//   } catch {
+//     const clean = String(raw)
+//       .replace(/^```(json)?\s*/i, "")
+//       .replace(/\s*```$/i, "")
+//       .trim()
+//     parsed = JSON.parse(jsonrepair(clean))
+//   }
+
+//   console.log("=== PARSED JSON ===");
+//   console.log(parsed);
+//   console.log("===================");
+
+//   // Normalize to Record<string, string>, keeping only non-empty string values.
+//   const out: Record<string, string> = {}
+//   for (const [k, v] of Object.entries(parsed ?? {})) {
+//     if (typeof v === "string" && v.trim()) {
+//       out[String(k)] = v
+//     }
+//   }
+//   return out
+// }
+
+type AIProvider = "baseten" | "openrouter";
+
+export async function nameFieldsFromHtml(
+  htmlPages: PageHtml[],
+  overrideProvider?: AIProvider
+): Promise<Record<string, string>> {
+
+  const provider: AIProvider = overrideProvider || (process.env.AI_PROVIDER as AIProvider) || "openrouter"; // "baseten";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
   const combined = htmlPages.length > 0
-    ? `<!-- PAGE ${htmlPages[0].index} -->\n${htmlPages[0].html}`
+    ? `\n${htmlPages[0].html}`
     : ""
 
-  const systemPrompt = `
+  const baseSystemPrompt = `
 You are an OCR and document-layout extraction expert.
 
 Input:
@@ -46,7 +189,6 @@ IMPORTANT:
 Field labels are determined by PHYSICAL PROXIMITY, not HTML order.
 
 Search priority (stop when a clear label is found):
-
 1. Immediately LEFT of the field (highest priority)
 2. Immediately ABOVE the field
 3. BELOW the field
@@ -54,104 +196,125 @@ Search priority (stop when a clear label is found):
 5. Nearby grouped text belonging to the same row/section
 6. Section headers only if no local label exists
 
-Ignore text that is visually distant even if it appears nearby in the HTML.
-
 Rules:
-
-- The label should be close to the field.
 - Prefer labels directly left or directly above.
-- If none exist, search below only as a last resort.
-- Never use page titles, instructions, paragraphs, or unrelated text if a nearby label exists.
 - Checkbox fields should use the text immediately adjacent to that checkbox.
-- If multiple fields share one label, generate distinct names (e.g. ssn_part_1, ssn_part_2, ssn_part_3).
-- Preserve meaning (business_name, exempt_payee_code, employer_identification_number, etc.).
+- If multiple fields share one label, generate distinct names (e.g. ssn_part_1, ssn_part_2).
+- Preserve meaning (business_name, exempt_payee_code).
 - Return one entry for EVERY data-field-id.
-- Do not invent fields.
-- Do not omit fields.
-- Output must be deterministic.
 
 Naming rules:
-
 - snake_case
 - lowercase only
 - letters and underscores only
 - concise (1-5 words)
-- no spaces
-- no punctuation
 - no duplicate values
+`;
+
+  let parsed: any;
+
+  if (provider === "baseten") {
+    console.log("=== SENDING HTML TO BASETEN API ROUTE ===");
+    console.log(combined);
+
+    const requestSchema = {
+      type: "object",
+      additionalProperties: {
+        type: "string"
+      }
+    };
+
+    const payload = {
+      systemPrompt: baseSystemPrompt,
+      userPrompt: combined,
+      schema: requestSchema,
+      temperature: 0.1,
+    };
+
+    const res = await fetch(`${baseUrl}/api/baseten`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Baseten API error: ${res.status} ${errorText}`);
+    }
+
+    parsed = await res.json();
+    console.log("=== PARSED JSON FROM BASETEN ===");
+    console.log(parsed);
+
+  } else {
+    console.log("=== SENDING HTML TO OPENROUTER ===");
+    console.log(combined);
+
+    const openRouterPrompt = `
+${baseSystemPrompt}
+Rules:
+- Ignore text that is visually distant even if it appears nearby in the HTML.
+- Never use page titles, instructions, paragraphs, or unrelated text if a nearby label exists.
+- Do not invent fields.
+- Do not omit fields.
+- Output must be deterministic.
 
 Return ONLY valid JSON.
-
 Format:
-
 {
   "1":"first_name",
   "2":"last_name",
   "3":"mailing_address"
 }
-
-No markdown.
-No explanations.
-No code fences.
-Only the JSON object.
+No markdown. No explanations. No code fences. Only the JSON object.
 `;
 
-  const payload = {
-    model: "openrouter/free", //
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: combined },
-    ],
-    temperature: 0.1,
-    response_format: { type: "json_object" },
-  }
+    const payload = {
+      model: "openrouter/free",
+      messages: [
+        { role: "system", content: openRouterPrompt },
+        { role: "user", content: combined },
+      ],
+      temperature: 0.1,
+      response_format: { type: "json_object" },
+    };
 
-  console.log("=== SENDING HTML TO OPENROUTER ===");
-  console.log(combined);
-  console.log("==================================");
-
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/open-router`, {
+    const res = await fetch(`${baseUrl}/api/open-router`, {
       method: "POST",
-      headers: {
-          "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-  });
+    });
 
-  if (!res.ok) {
+    if (!res.ok) {
       let errorData;
       try {
-          errorData = await res.json();
+        errorData = await res.json();
       } catch {
-          errorData = { error: await res.text() };
+        errorData = { error: await res.text() };
       }
-      throw new Error(errorData.error || `API error: ${res.status} ${res.statusText}`);
+      throw new Error(errorData.error || `OpenRouter API error: ${res.status} ${res.statusText}`);
+    }
+
+    const response = await res.json();
+    const raw = response?.choices?.[0]?.message?.content ?? "";
+
+    console.log("=== RECEIVED RAW JSON FROM OPENROUTER ===");
+    console.log(raw);
+
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      const clean = String(raw)
+        .replace(/^```(json)?\s*/i, "")
+        .replace(/\s*```$/i, "")
+        .trim();
+      parsed = JSON.parse(jsonrepair(clean));
+    }
+
+    console.log("=== PARSED JSON FROM OPENROUTER ===");
+    console.log(parsed);
   }
 
-  const response = await res.json();
-  const raw = response?.choices?.[0]?.message?.content ?? ""
-
-  console.log("=== RECEIVED RAW JSON FROM OPENROUTER ===");
-  console.log(raw);
-  console.log("=========================================");
-
-  let parsed: any
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    const clean = String(raw)
-      .replace(/^```(json)?\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim()
-    parsed = JSON.parse(jsonrepair(clean))
-  }
-
-  console.log("=== PARSED JSON ===");
-  console.log(parsed);
-  console.log("===================");
-
-  // Normalize to Record<string, string>, keeping only non-empty string values.
   const out: Record<string, string> = {}
   for (const [k, v] of Object.entries(parsed ?? {})) {
     if (typeof v === "string" && v.trim()) {
@@ -208,7 +371,6 @@ export async function applyFieldNames(
     else groups.set(f.name, [f])
   }
 
-  // Compute a unique final name per original field name.
   const used = new Set<string>()
   const renameMap = new Map<string, string>()
   for (const [origName, group] of groups) {

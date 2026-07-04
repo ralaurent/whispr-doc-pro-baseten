@@ -18,6 +18,7 @@ export function useTranscriber(): Transcriber {
                 setModelLoadingProgress(message.progress)
                 break
             case 'update':
+                // Optional: handle partial/streaming results here
                 break
             case 'complete':
                 setOutput(message.data)

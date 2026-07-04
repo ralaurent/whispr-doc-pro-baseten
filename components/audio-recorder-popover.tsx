@@ -57,7 +57,7 @@ const LANGUAGES = [
 
 interface AudioRecorderProps {
     onTranscript?: (text: string) => void;
-    mode?: "web-speech" | "whisper-tiny" | "whisper-large";   // changed type
+    mode?: "web-speech" | "whisper-tiny" | "whisper-large";
     isLoading?: boolean;
 }
 
@@ -72,6 +72,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
     const [isRecordingWhisper, setIsRecordingWhisper] = useState(false)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const chunksRef = useRef<Blob[]>([])
+    const [isFinalizing, setIsFinalizing] = useState(false)
 
     const transcriptRef = useRef("");
 
@@ -84,7 +85,9 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
     } = useSpeechRecognition()
 
     const isRecording = transcriptionMode === "web-speech" ? isRecordingWebSpeech : isRecordingWhisper;
-    const isProcessing = transcriptionMode === "web-speech" ? false : (transcriber.isProcessing || transcriber.isModelLoading);
+    const isTranscribing = transcriptionMode === "web-speech" ? false : (transcriber.isProcessing || transcriber.isModelLoading);
+
+    const isBusy = isFinalizing || isTranscribing;
 
     const shouldProcessOutput = useRef(false)
 
@@ -110,7 +113,8 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
     useEffect(() => {
         if (!isOpen) {
             stopAllStreams()
-            setLangSearch("") // Reset search when closed
+            setLangSearch("")
+            setIsFinalizing(false)
         }
     }, [isOpen])
 
@@ -130,20 +134,21 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
     const startRecordingFn = async (currentMode = transcriptionMode, currentLang = language) => {
         try {
+            transcriber.onInputChange()
+            setIsFinalizing(false)
+
             if (currentMode === "web-speech") {
                 resetWebSpeech()
                 SpeechRecognition.startListening({
                     continuous: true,
-                    language: "en-US" // Web-speech locked to English per requirements
+                    language: "en-US"
                 })
             }
 
-            // 1. Get Microphone Stream (For visualizer & Whisper)
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
             setVisualizerStream(stream)
 
             if (currentMode !== "web-speech") {
-                // 2. Setup MediaRecorder solely for Whisper
                 chunksRef.current = []
                 const mediaRecorder = new MediaRecorder(stream)
 
@@ -165,12 +170,13 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
             setIsOpen(true)
             startRecordingFn()
         } else {
-            if (isProcessing) return;
+            if (isBusy) return;
             handleCancel()
         }
     }
 
     const handleCancel = () => {
+        if (isBusy) return;
         stopAllStreams()
         if (transcriptionMode === "web-speech") resetWebSpeech()
         setIsOpen(false)
@@ -178,6 +184,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
     const handleConfirm = async () => {
         if (transcriptionMode === "web-speech") {
+            setIsFinalizing(true) // NEW
             SpeechRecognition.stopListening()
 
             setTimeout(() => {
@@ -187,10 +194,12 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                 if (onTranscript) onTranscript(finalTranscript)
 
                 stopAllStreams()
+                setIsFinalizing(false)
                 setIsOpen(false)
             }, 750)
         } else {
             if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                setIsFinalizing(true)
                 mediaRecorderRef.current.stop()
 
                 mediaRecorderRef.current.onstop = async () => {
@@ -206,17 +215,18 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
                         shouldProcessOutput.current = true;
 
-                        // Determine model based on selected mode and language
                         let model: string;
                         if (transcriptionMode === 'whisper-tiny') {
                             model = language === 'en' ? 'Xenova/whisper-tiny.en' : 'Xenova/whisper-tiny';
-                        } else { // whisper-large
-                            model = 'onnx-community/lite-whisper-large-v3-turbo-ONNX'; // multilingual only
+                        } else {
+                            model = 'onnx-community/lite-whisper-large-v3-turbo-ONNX';
                         }
 
                         transcriber.start(audioBuffer, model as any, language)
+                        setIsFinalizing(false)
                     } catch (e) {
                         console.error("Error decoding audio data", e)
+                        setIsFinalizing(false)
                     }
                 }
             }
@@ -225,7 +235,6 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
     const handleLanguageChange = (newLang: string) => {
         setLanguage(newLang);
-        // If web-speech was active, it's strictly english, so we only restart if in whisper modes
         if (transcriptionMode !== "web-speech" && isRecordingWhisper) {
             stopAllStreams();
             startRecordingFn(transcriptionMode, newLang);
@@ -235,6 +244,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setIsFinalizing(true)
             setAudioFile(file);
 
             let currentMode = transcriptionMode;
@@ -255,20 +265,24 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                 let model: string;
                 if (currentMode === 'whisper-tiny') {
                     model = language === 'en' ? 'Xenova/whisper-tiny.en' : 'Xenova/whisper-tiny';
-                } else { // whisper-large
+                } else {
                     model = 'onnx-community/lite-whisper-large-v3-turbo-ONNX';
                 }
 
                 transcriber.start(audioBuffer, model as any, language);
+                setIsFinalizing(false) // NEW
             } catch (error) {
                 console.error("Error decoding audio data", error);
+                setIsFinalizing(false) // NEW
             }
         }
     };
 
     const loadingMessage = transcriber.isModelLoading
         ? `Loading Model... ${Math.round(transcriber.modelLoadingProgress || 0)}%`
-        : "Transcribing...";
+        : transcriber.isProcessing
+            ? "Transcribing..."
+            : "Finishing up..."; // NEW: covers the isFinalizing-only phase
 
     const filteredLanguages = LANGUAGES.filter(l =>
         l.name.toLowerCase().includes(langSearch.toLowerCase())
@@ -291,10 +305,13 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                 side="bottom"
                 align="center"
                 className="w-auto p-0 border-none bg-transparent shadow-none focus:outline-none mb-2"
+                onEscapeKeyDown={(e) => { if (isBusy) e.preventDefault() }}
+                onPointerDownOutside={(e) => { if (isBusy) e.preventDefault() }}
+                onInteractOutside={(e) => { if (isBusy) e.preventDefault() }}
             >
                 <div className="flex items-center gap-2 h-14 pl-4 pr-2 bg-white rounded-full border border-border shadow-xl w-[320px]">
                     <div className="flex-1 overflow-hidden h-full flex items-center justify-center relative">
-                        {visualizerStream && isRecording && !isProcessing && (
+                        {visualizerStream && isRecording && !isBusy && (
                             <div className="w-full h-[30px] flex items-center justify-center overflow-hidden scale-x-[-1]">
                                 <AudioVisualizer
                                     stream={visualizerStream}
@@ -306,12 +323,18 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                             </div>
                         )}
 
-                        {isProcessing && (
+                        {isBusy && (
                             <div className="absolute inset-x-0 inset-y-0 bg-white/80 flex items-center justify-center rounded-full z-10 gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                 <span className="text-xs font-medium">
                                     {loadingMessage}
                                 </span>
+                            </div>
+                        )}
+
+                        {!isBusy && !isRecording && transcriber.error && (
+                            <div className="text-[11px] text-red-500 px-2 text-center leading-tight">
+                                Transcription failed — {transcriber.error}. Try again.
                             </div>
                         )}
                     </div>
@@ -322,7 +345,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 rounded-full hover:bg-gray-100 hover:text-gray-600"
-                                    disabled={isProcessing}
+                                    disabled={isBusy}
                                 >
                                     <Ellipsis className="h-4 w-4" />
                                 </Button>
@@ -386,7 +409,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                                                     placeholder="Search language..."
                                                     value={langSearch}
                                                     onChange={(e) => setLangSearch(e.target.value)}
-                                                    onKeyDownCapture={(e) => e.stopPropagation()} // Prevents Radix from closing the menu on spacebar
+                                                    onKeyDownCapture={(e) => e.stopPropagation()}
                                                 />
                                             </div>
                                             <div className="overflow-y-auto p-1 flex-1">
@@ -422,7 +445,6 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
                                 <DropdownMenuSeparator className="my-2" />
 
-                                {/* Model Selection */}
                                 <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                                     Model
                                 </DropdownMenuLabel>
@@ -500,7 +522,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                             size="icon"
                             className="h-8 w-8 rounded-full hover:bg-red-50 hover:text-red-600"
                             onClick={handleCancel}
-                            disabled={isProcessing}
+                            disabled={isBusy}
                         >
                             <X className="h-4 w-4" />
                         </Button>
@@ -509,9 +531,9 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                             size="icon"
                             className="h-8 w-8 rounded-full hover:bg-green-50 hover:text-green-600"
                             onClick={handleConfirm}
-                            disabled={isProcessing || (transcriptionMode !== "web-speech" && !isRecording)}
+                            disabled={isBusy || (transcriptionMode !== "web-speech" && !isRecording)}
                         >
-                            {isProcessing ? (
+                            {isBusy ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <Check className="h-4 w-4" />

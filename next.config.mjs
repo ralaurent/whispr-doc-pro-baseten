@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
+    LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
+    LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
+    LANGFUSE_BASE_URL: process.env.LANGFUSE_BASE_URL,
+    BASETEN_API_KEY: process.env.BASETEN_API_KEY,
     OPENROUTER_KEY_1: process.env.OPENROUTER_KEY_1,
     OPENROUTER_KEY_2: process.env.OPENROUTER_KEY_2,
     OPENROUTER_KEY_3: process.env.OPENROUTER_KEY_3,

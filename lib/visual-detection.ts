@@ -1,5 +1,6 @@
 //visual-detection.ts
-import { DetectedField, DetectionMode, SIGNATURE_REGEX, DATE_REGEX } from "./pdf-utils"
+import { DetectedField, DetectionMode } from "./pdf-utils"
+import { SIGNATURE_REGEX, DATE_REGEX } from "./regex"
 
 export interface LineLabelResult {
     text: string
