@@ -425,9 +425,25 @@ export async function applyFieldNames(
   const detectedFields: DetectedField[] = extractedFields.map((f) => {
     const dim = pageDim.get(f.page) ?? { width: f.x + f.width, height: f.y + f.height }
     const finalName = renameMap.get(f.name) ?? f.name
+
+    let inferredType = mapType(f.type)
+
+    if (inferredType === "text") {
+      const separatedName = finalName.replace(/_/g, " ")
+
+      if (SIGNATURE_REGEX.test(separatedName)) {
+        inferredType = "signature"
+      } else if (
+        DATE_REGEX.test(separatedName) ||
+        /\bdate\b/i.test(separatedName)
+      ) {
+        inferredType = "date"
+      }
+    }
+
     return {
       name: finalName,
-      type: mapType(f.type),
+      type: inferredType,
       rect: {
         x: f.x,
         y: dim.height - f.y - f.height,
