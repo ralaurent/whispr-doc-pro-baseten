@@ -23,36 +23,36 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import { useTranscriber } from '@/hooks/use-transcriber'
 
 const LANGUAGES = [
-    { code: "en", name: "English" },
-    { code: "es", name: "Spanish" },
-    { code: "it", name: "Italian" },
-    { code: "de", name: "German" },
-    { code: "pt", name: "Portuguese" },
-    { code: "fr", name: "French" },
-    { code: "ja", name: "Japanese" },
-    { code: "nl", name: "Dutch" },
-    { code: "pl", name: "Polish" },
-    { code: "ru", name: "Russian" },
-    { code: "ko", name: "Korean" },
-    { code: "ca", name: "Catalan" },
-    { code: "sv", name: "Swedish" },
-    { code: "tr", name: "Turkish" },
-    { code: "id", name: "Indonesian" },
-    { code: "no", name: "Norwegian" },
-    { code: "fi", name: "Finnish" },
-    { code: "vi", name: "Vietnamese" },
-    { code: "da", name: "Danish" },
-    { code: "he", name: "Hebrew" },
-    { code: "cs", name: "Czech" },
-    { code: "hu", name: "Hungarian" },
-    { code: "ro", name: "Romanian" },
-    { code: "el", name: "Greek" },
-    { code: "ar", name: "Arabic" },
-    { code: "uk", name: "Ukrainian" },
-    { code: "tl", name: "Tagalog" },
-    { code: "ms", name: "Malay" },
-    { code: "th", name: "Thai" },
-    { code: "hi", name: "Hindi" }
+    { code: "en", name: "English", speechLang: "en-US" },
+    { code: "es", name: "Spanish", speechLang: "es-ES" },
+    { code: "it", name: "Italian", speechLang: "it-IT" },
+    { code: "de", name: "German", speechLang: "de-DE" },
+    { code: "pt", name: "Portuguese", speechLang: "pt-BR" },
+    { code: "fr", name: "French", speechLang: "fr-FR" },
+    { code: "ja", name: "Japanese", speechLang: "ja-JP" },
+    { code: "nl", name: "Dutch", speechLang: "nl-NL" },
+    { code: "pl", name: "Polish", speechLang: "pl-PL" },
+    { code: "ru", name: "Russian", speechLang: "ru-RU" },
+    { code: "ko", name: "Korean", speechLang: "ko-KR" },
+    { code: "ca", name: "Catalan", speechLang: "ca-ES" },
+    { code: "sv", name: "Swedish", speechLang: "sv-SE" },
+    { code: "tr", name: "Turkish", speechLang: "tr-TR" },
+    { code: "id", name: "Indonesian", speechLang: "id-ID" },
+    { code: "no", name: "Norwegian", speechLang: "nb-NO" },
+    { code: "fi", name: "Finnish", speechLang: "fi-FI" },
+    { code: "vi", name: "Vietnamese", speechLang: "vi-VN" },
+    { code: "da", name: "Danish", speechLang: "da-DK" },
+    { code: "he", name: "Hebrew", speechLang: "he-IL" },
+    { code: "cs", name: "Czech", speechLang: "cs-CZ" },
+    { code: "hu", name: "Hungarian", speechLang: "hu-HU" },
+    { code: "ro", name: "Romanian", speechLang: "ro-RO" },
+    { code: "el", name: "Greek", speechLang: "el-GR" },
+    { code: "ar", name: "Arabic", speechLang: "ar-SA" },
+    { code: "uk", name: "Ukrainian", speechLang: "uk-UA" },
+    { code: "tl", name: "Tagalog", speechLang: "fil-PH" },
+    { code: "ms", name: "Malay", speechLang: "ms-MY" },
+    { code: "th", name: "Thai", speechLang: "th-TH" },
+    { code: "hi", name: "Hindi", speechLang: "hi-IN" },
 ]
 
 interface AudioRecorderProps {
@@ -139,9 +139,11 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
             if (currentMode === "web-speech") {
                 resetWebSpeech()
+                // Update to map the correct BCP-47 tag from your LANGUAGES array
+                const selectedLangObj = LANGUAGES.find(l => l.code === currentLang)
                 SpeechRecognition.startListening({
                     continuous: true,
-                    language: "en-US"
+                    language: selectedLangObj?.speechLang || "en-US"
                 })
             }
 
@@ -235,7 +237,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
     const handleLanguageChange = (newLang: string) => {
         setLanguage(newLang);
-        if (transcriptionMode !== "web-speech" && isRecordingWhisper) {
+        if (isRecording) {
             stopAllStreams();
             startRecordingFn(transcriptionMode, newLang);
         }
@@ -393,7 +395,6 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger
-                                        disabled={transcriptionMode === "web-speech"}
                                         className="flex items-center justify-between py-2 cursor-pointer focus:bg-gray-50 focus:text-primary"
                                     >
                                         <span className="font-medium text-sm">
@@ -437,12 +438,6 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
 
-                                {transcriptionMode === "web-speech" && (
-                                    <div className="px-2 pb-1 text-[11px] text-muted-foreground/80 leading-tight">
-                                        Web Speech is restricted to English. Select a Whisper model for multilingual.
-                                    </div>
-                                )}
-
                                 <DropdownMenuSeparator className="my-2" />
 
                                 <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
@@ -453,7 +448,6 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                                         e.preventDefault();
                                         stopAllStreams();
                                         if (transcriptionMode === "web-speech") resetWebSpeech();
-                                        setLanguage("en");
                                         setTranscriptionMode("web-speech");
                                         startRecordingFn("web-speech", "en");
                                     }}
@@ -461,7 +455,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                                 >
                                     <div className="flex flex-col text-left">
                                         <span className="font-semibold text-sm">Web Speech API</span>
-                                        <span className="text-xs text-muted-foreground mt-0.5">Instant (English Only)</span>
+                                        <span className="text-xs text-muted-foreground mt-0.5">Instant</span>
                                     </div>
                                     {transcriptionMode === "web-speech" && <Check className="h-4 w-4 text-primary" />}
                                 </DropdownMenuItem>
