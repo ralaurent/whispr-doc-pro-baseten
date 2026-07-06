@@ -16,8 +16,6 @@ export async function POST(request: Request) {
         modelParameters: { temperature: payload.temperature }
     });
 
-    await flushLangfuse();
-
     try {
         initKeys();
 

@@ -20,8 +20,6 @@ export async function processTranscriptWithLlm(
         tags: ["transcript-extraction"]
     });
 
-    await flushLangfuse();
-
     const schemaDescription = JSON.stringify(normalizedSchema, null, 2);
 
     const baseSystemPrompt = `

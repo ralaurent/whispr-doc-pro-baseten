@@ -45,7 +45,6 @@ export async function nameFieldsFromHtml(
     input: combined.slice(0, 500) + "... (truncated)",
     tags: ["pdf-extraction"]
   });
-  await flushLangfuse();
 
   const provider: AIProvider = overrideProvider || (process.env.AI_PROVIDER as AIProvider) || "openrouter"; // "baseten";
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -194,7 +193,7 @@ No markdown. No explanations. No code fences. Only the JSON object.
       langfuse.event({
         traceId: trace.id,
         name: "Extraction Failed",
-        level: "ERROR",
+
         statusMessage: errorMsg,
         output: { error: errorMsg }
       });
@@ -206,8 +205,6 @@ No markdown. No explanations. No code fences. Only the JSON object.
 
     const response = await res.json();
     const raw = response?.choices?.[0]?.message?.content ?? "";
-
-    console.log("raw", raw);
 
     try {
       parsed = JSON.parse(raw);

@@ -24,8 +24,6 @@ export async function POST(request: Request) {
             modelParameters: { temperature: temperature ?? 0.1 }
         });
 
-        await flushLangfuse();
-
         if (!schema) {
             if (generation) {
                 generation.end({ level: "ERROR", statusMessage: "Missing schema in request body" });

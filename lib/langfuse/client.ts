@@ -10,6 +10,8 @@ export const langfuse =
         secretKey: process.env.LANGFUSE_SECRET_KEY,
         baseUrl: process.env.LANGFUSE_BASE_URL || "https://us.cloud.langfuse.com",
         flushAt: 1,
+        // @ts-expect-error - debug is valid at runtime
+        debug: true,
     });
 
 if (process.env.NODE_ENV !== "production") {
