@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "eval": "npx tsx evals/run-eval.ts"
   },
   "dependencies": {
     "@ai-sdk/baseten": "^2.0.5",
@@ -100,6 +101,7 @@
     "@types/react-dom": "19.2.3",
     "@types/react-speech-recognition": "^3.9.6",
     "@types/validate-npm-package-name": "^4.0.2",
+    "deepeval": "^0.1.31",
     "postcss": "^8.5",
     "shadcn": "^4.0.0",
     "tailwindcss": "^4.2.0",

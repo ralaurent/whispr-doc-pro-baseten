@@ -1,0 +1,21 @@
+{
+    "1": "first_name_middle_initial",
+    "2": "last_name",
+    "3": "social_security_number",
+    "4": "address",
+    "5": "city_state_zip",
+    "6": "filing_status_single_or_married_separately",
+    "7": "filing_status_married_jointly_or_surviving_spouse",
+    "8": "filing_status_head_of_household",
+    "9": "step_2c_two_jobs_checkbox",
+    "10": "step_3a_qualifying_children_amount",
+    "11": "step_3b_other_dependents_amount",
+    "12": "step_3_total_credits",
+    "13": "step_4a_other_income",
+    "14": "step_4b_deductions",
+    "15": "step_4c_extra_withholding",
+    "16": "exempt_from_withholding_checkbox",
+    "17": "employer_name_address",
+    "18": "first_date_of_employment",
+    "19": "employer_ein"
+}

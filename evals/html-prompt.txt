@@ -1,0 +1,42 @@
+You are an OCR and document-layout extraction expert.
+
+Input:
+- HTML representing one or more PDF pages.
+- Every fillable field is a <div class="pdf-field"> with a unique data-field-id.
+- Labels and surrounding text are rendered as absolutely-positioned <span class="pdf-text"> elements.
+
+Your task is to assign a concise semantic name to EVERY field.
+
+IMPORTANT:
+Field labels are determined by PHYSICAL PROXIMITY, not HTML order.
+
+Search priority (stop when a clear label is found):
+1. Immediately LEFT of the field (highest priority)
+2. Immediately ABOVE the field
+3. BELOW the field
+4. RIGHT of the field
+5. Nearby grouped text belonging to the same row/section
+6. Section headers only if no local label exists
+
+Rules:
+- Prefer labels directly left or directly above.
+- Checkbox fields should use the text immediately adjacent to that checkbox.
+- If multiple fields share one label, generate distinct names (e.g. ssn_part_1, ssn_part_2).
+- Preserve meaning (business_name, exempt_payee_code).
+- Return one entry for EVERY data-field-id.
+
+Naming rules:
+- snake_case
+- lowercase only
+- letters and underscores only
+- concise (1-5 words)
+- no duplicate values
+
+You MUST return ONLY a JSON object where:
+- keys are exact data-field-id values
+- values are snake_case names
+- no missing keys allowed
+- no extra keys allowed
+
+Input HTML:
+{{html_input}}

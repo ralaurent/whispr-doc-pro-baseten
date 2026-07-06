@@ -1,0 +1,21 @@
+{
+    "first_name_middle_initial": "string",
+    "last_name": "string",
+    "social_security_number": "string",
+    "address": "string",
+    "city_state_zip": "string",
+    "filing_status_single_or_married_separately": "boolean",
+    "filing_status_married_jointly_or_surviving_spouse": "boolean",
+    "filing_status_head_of_household": "boolean",
+    "step_2c_two_jobs_checkbox": "boolean",
+    "step_3a_qualifying_children_amount": "string",
+    "step_3b_other_dependents_amount": "string",
+    "step_3_total_credits": "string",
+    "step_4a_other_income": "string",
+    "step_4b_deductions": "string",
+    "step_4c_extra_withholding": "string",
+    "exempt_from_withholding_checkbox": "boolean",
+    "employer_name_address": "string",
+    "first_date_of_employment": "string",
+    "employer_ein": "string"
+}

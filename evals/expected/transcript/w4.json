@@ -1,0 +1,21 @@
+{
+    "first_name_middle_initial": "Maria L.",
+    "last_name": "Torres",
+    "social_security_number": "482-15-9037",
+    "address": "128 Palm Street, Floor 4B, Zaragoza, Spain 50008",
+    "city_state_zip": "Zaragoza, Aragon 50008",
+    "filing_status_single_or_married_separately": false,
+    "filing_status_married_jointly_or_surviving_spouse": false,
+    "filing_status_head_of_household": true,
+    "step_2c_two_jobs_checkbox": false,
+    "step_3a_qualifying_children_amount": null,
+    "step_3b_other_dependents_amount": null,
+    "step_3_total_credits": null,
+    "step_4a_other_income": null,
+    "step_4b_deductions": null,
+    "step_4c_extra_withholding": null,
+    "exempt_from_withholding_checkbox": false,
+    "employer_name_address": "Industrias Sol Naciente S.A., Avenida del Rio 450, Sevilla, Spain 41001",
+    "first_date_of_employment": "2023-03-12",
+    "employer_ein": "12-3456789"
+}

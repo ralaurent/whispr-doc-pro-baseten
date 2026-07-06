@@ -1,0 +1,160 @@
+description: "OCR Evaluation on Forms and Transcripts"
+
+prompts:
+#   - file://evals/html-prompt.txt
+  - file://evals/transcript-prompt.txt 
+
+providers:
+  - file://evals/basetenProvider.ts
+
+defaultTest:
+  options:
+    provider:
+      id: openai:chat:openai/gpt-4o-mini
+      config:
+        apiBaseUrl: https://openrouter.ai/api/v1
+        apiKeyEnvar: OPENROUTER_KEY_1
+
+tests:
+  # ── Stage 1: HTML → Field Name Extraction ─────────────────────────────────
+  # - vars:
+  #     html_input: file://evals/html/w4.html
+  #     expected_output: file://evals/expected/field/w4.json
+  #   prompt: file://evals/html-prompt.txt
+  #   assert:
+  #     - type: llm-rubric
+  #       value: |
+  #         You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
+  #         Your task is to rate the actual JSON output against the expected ground truth JSON.
+
+  #         CRITERIA FOR KEY MATCHING (Loosely Enforced):
+  #         - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
+  #         - Examples of valid matches (DO NOT PENALIZE):
+  #           * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
+  #           * 'step_4a_other_income_amount' matches 'step_4a_other_income'
+  #         - Focus heavily on whether the factual data values line up with corresponding semantic fields.
+  #         - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
+
+  #         EVALUATION STEPS:
+  #         1. Map keys from actual output to expected output based on loose semantic similarity.
+  #         2. Verify factual data values line up correctly across matched keys.
+  #         3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
+
+  #         Expected Ground Truth JSON:
+  #         {{expected_output}}
+
+  # - vars:
+  #     html_input: file://evals/html/w9.html
+  #     expected_output: file://evals/expected/field/w9.json
+  #   prompt: file://evals/html-prompt.txt
+  #   assert:
+  #     - type: llm-rubric
+  #       value: |
+  #         You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
+  #         Your task is to rate the actual JSON output against the expected ground truth JSON.
+
+  #         CRITERIA FOR KEY MATCHING (Loosely Enforced):
+  #         - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
+  #         - Examples of valid matches (DO NOT PENALIZE):
+  #           * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
+  #           * 'step_4a_other_income_amount' matches 'step_4a_other_income'
+  #         - Focus heavily on whether the factual data values line up with corresponding semantic fields.
+  #         - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
+
+  #         EVALUATION STEPS:
+  #         1. Map keys from actual output to expected output based on loose semantic similarity.
+  #         2. Verify factual data values line up correctly across matched keys.
+  #         3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
+
+  #         Expected Ground Truth JSON:
+  #         {{expected_output}}
+
+  # - vars:
+  #     html_input: file://evals/html/w1040.html
+  #     expected_output: file://evals/expected/field/w1040.json
+  #   prompt: file://evals/html-prompt.txt
+  #   assert:
+  #     - type: llm-rubric
+  #       value: |
+  #         You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
+  #         Your task is to rate the actual JSON output against the expected ground truth JSON.
+
+  #         CRITERIA FOR KEY MATCHING (Loosely Enforced):
+  #         - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
+  #         - Examples of valid matches (DO NOT PENALIZE):
+  #           * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
+  #           * 'step_4a_other_income_amount' matches 'step_4a_other_income'
+  #           * 'other_tax_year_begin_date' or 'other_tax_year_end_date' are acceptable matches for tax year date fields.
+  #         - Focus heavily on whether the factual data values line up with corresponding semantic fields.
+  #         - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
+
+  #         EVALUATION STEPS:
+  #         1. Map keys from actual output to expected output based on loose semantic similarity.
+  #         2. Verify factual data values line up correctly across matched keys.
+  #         3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
+
+  #         Expected Ground Truth JSON:
+  #         {{expected_output}}
+
+  # ── Stage 2: Transcript → Structured JSON Extraction ──────────────────────
+  - vars:
+      transcript: file://evals/expected/transcript/chinese.txt
+      schema: file://evals/schema/w9.json
+      expected_output: file://evals/expected/transcript/w9.json
+    prompt: file://evals/transcript-prompt.txt
+    assert:
+      - type: llm-rubric
+        value: |
+          You are an expert evaluation judge for multilingual transcript data extraction.
+          Rate the actual JSON output against the expected ground truth JSON extracted from a spoken transcript.
+
+          STRICT RULES (these must match exactly):
+          - Boolean fields (true/false) must be exactly correct.
+          - String identifiers like SSN parts (ssn_part_1, ssn_part_2, ssn_part_3), EIN parts, exempt codes must match exactly.
+          - Null fields should be null in both.
+
+          LENIENT RULES (be forgiving here):
+          - Address and location fields: accept if the same location is represented, even if word order differs slightly or abbreviations are used.
+          - Name fields: accept minor transliteration differences for non-Latin names.
+          - City/state/zip: accept if the correct city, state, and zip are present even if formatting differs.
+
+          EVALUATION STEPS:
+          1. Check all boolean fields — must be exact.
+          2. Check all identifier/code fields (SSN, EIN, codes) — must be exact.
+          3. Check address/location fields leniently — same location counts as correct.
+          4. Penalize only for clearly wrong or missing factual data.
+
+          Expected Ground Truth JSON:
+          {{expected_output}}
+
+  - vars:
+      transcript: file://evals/expected/transcript/spanish.txt
+      schema: file://evals/schema/w4.json
+      expected_output: file://evals/expected/transcript/w4.json
+    prompt: file://evals/transcript-prompt.txt
+    assert:
+      - type: llm-rubric
+        value: |
+          You are an expert evaluation judge for multilingual transcript data extraction.
+          Rate the actual JSON output against the expected ground truth JSON extracted from a spoken transcript.
+
+          STRICT RULES (these must match exactly):
+          - Boolean fields (true/false) must be exactly correct.
+          - SSN format must be XXX-XX-XXXX and match the expected value.
+          - EIN format must be XX-XXXXXXX and match the expected value.
+          - Date format must be YYYY-MM-DD (e.g. 2023-03-12) and match the expected value.
+          - Null fields should be null in both.
+
+          LENIENT RULES (be forgiving here):
+          - Address and location fields: accept if the same location is represented, even if word order differs slightly, or Spanish/English place names are used interchangeably (e.g. "Spain" vs "España", "Aragon" vs "Aragón").
+          - Name fields: accept minor accent or capitalization differences.
+          - City/state/zip: accept if the correct city, region, and postal code are present even if formatting differs.
+
+          EVALUATION STEPS:
+          1. Check all boolean fields — must be exact.
+          2. Check SSN, EIN, and date fields — must match the correct formatted value.
+          3. Check address/location fields leniently — same location counts as correct.
+          4. Penalize only for clearly wrong or missing factual data.
+
+          Expected Ground Truth JSON:
+          {{expected_output}}
