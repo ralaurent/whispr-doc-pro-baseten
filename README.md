@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="doc/images/banner.png" alt="WhisprDoc Banner" width="100%" />
+  <img src="docs/images/banner.png" alt="WhisprDoc Banner" width="100%" />
   
   # WhisprDoc
   
@@ -84,7 +84,7 @@ To deliver a production-grade experience, latency and observability are treated 
 **Impact:** Pipeline 1 (Automated Document Layout Extraction) saw a **357.81% reduction in wait time**, dropping from an unacceptable `2m 1s` down to `26.43s`.
 
 <div align="center">
-  <img src="doc/images/metrics.png" alt="Latency and Observability Metrics" width="80%" />
+  <img src="docs/images/metrics.png" alt="Latency and Observability Metrics" width="80%" />
 </div>
 
 ---
@@ -164,7 +164,7 @@ tests:
 WhisprDoc utilizes a **document-centric NoSQL database (Amazon DynamoDB)** optimized for versioning, autosave state management, and strict auditability.
 
 <div align="center">
-  <img src="doc/images/schema.png" alt="DynamoDB Schema Design" width="70%" />
+  <img src="docs/images/schema.png" alt="DynamoDB Schema Design" width="70%" />
 </div>
 
 * **`DocumentStoreItem` (Primary Table):** Stores the current "live" version. The partition key (`userId#organizationId`) provides strict tenant isolation.
