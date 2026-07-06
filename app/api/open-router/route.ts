@@ -1,12 +1,24 @@
 import { NextResponse } from "next/server";
 import { initKeys, keyPool, COOLDOWN_PERIOD_MS } from "@/lib/key-chain";
+import { langfuse, flushLangfuse } from "@/lib/langfuse";
 
 let currentKeyIndex = 0;
 
 export async function POST(request: Request) {
+    const traceId = request.headers.get("x-langfuse-trace-id") || undefined;
+    const payload = await request.json();
+
+    const generation = langfuse.generation({
+        traceId: traceId,
+        name: "OpenRouter-Completion",
+        model: payload.model,
+        input: { systemPrompt: payload.messages[0].content, userPrompt: (payload.messages[1].content as string).slice(0, 500) },
+        modelParameters: { temperature: payload.temperature }
+    });
+
+    await flushLangfuse();
+
     try {
-        const payload = await request.json();
-        
         initKeys();
 
         const totalKeys = keyPool.length;
@@ -35,12 +47,19 @@ export async function POST(request: Request) {
                         "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
                         "X-Title": "PDF Auto-Filler Assistant"
                     },
-                    body: JSON.stringify(payload), // Preserve original payload
+                    body: JSON.stringify(payload),
                 });
 
                 if (!response.ok) {
                     const errorText = await response.text();
                     const status = response.status;
+
+                    langfuse.event({
+                        traceId: traceId,
+                        name: `Key Failure (Index ${keyRecord.index})`,
+                        level: "WARNING",
+                        input: { status, errorText }
+                    });
 
                     // 429: Rate limit, 402: Quota/Payment Required
                     if (status === 429 || status === 402) {
@@ -79,8 +98,19 @@ export async function POST(request: Request) {
                 // Success! 
                 const data = await response.json();
 
+                generation.end({
+                    output: data.choices?.[0]?.message?.content ?? "",
+                    usage: {
+                        promptTokens: data.usage?.prompt_tokens,
+                        completionTokens: data.usage?.completion_tokens,
+                        totalTokens: data.usage?.total_tokens,
+                    }
+                });
+
                 // Advance the index for the next entirely new request (Round-Robin)
                 currentKeyIndex = (currentKeyIndex + 1) % totalKeys;
+
+                await flushLangfuse();
 
                 return NextResponse.json(data);
 
@@ -93,12 +123,14 @@ export async function POST(request: Request) {
             }
         }
 
-        return NextResponse.json(
-            { error: `All available OpenRouter keys are exhausted, on cooldown, or failed. Last error: ${lastError?.message}` },
-            { status: 500 }
-        );
+        const exhaustError = `All available OpenRouter keys are exhausted. Last error: ${lastError?.message}`;
+        generation.end({ level: "ERROR", statusMessage: exhaustError });
+        await flushLangfuse();
+        return NextResponse.json({ error: exhaustError }, { status: 500 });
 
     } catch (err: any) {
+        generation.end({ level: "ERROR", statusMessage: err.message });
+        await flushLangfuse();
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }

@@ -8,4 +8,4 @@ node_modules
 .vercel
 
 # Ignore generated HTML files
-/public/html/
+/public/html/**
