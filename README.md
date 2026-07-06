@@ -81,7 +81,7 @@ We decouple heavy audio processing from the server by deploying a **quantized `W
 
 To deliver a production-grade experience, latency and observability are treated as first-class citizens. By migrating our core model inference to **Baseten** and deeply integrating **Langfuse** for granular tracing of LLM spans, token usage, and prompt execution, I achieved massive latency reductions.
 
-**Impact:** Pipeline 1 (Automated Document Layout Extraction) saw a **357.81% reduction in wait time**, dropping from an unacceptable `2m 1s` down to `26.43s`.
+**Impact:** Pipeline 1 (Automated Document Layout Extraction) saw a **457.81% reduction in wait time**, dropping from an unacceptable `2m 1s` down to `26.43s`.
 
 <div align="center">
   <img src="docs/images/metrics.png" alt="Latency and Observability Metrics" width="80%" />
