@@ -22,7 +22,7 @@ class BasetenProvider {
       const { text } = await generateText({
         model: baseten('deepseek-ai/DeepSeek-V4-Pro'),
         prompt: prompt,
-        maxOutputTokens: 24000,
+        maxOutputTokens: 48000,
         temperature: 0.1,
       });
       return { output: text };

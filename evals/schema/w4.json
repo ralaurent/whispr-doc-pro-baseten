@@ -1,21 +1,127 @@
 {
-    "first_name_middle_initial": "string",
-    "last_name": "string",
-    "social_security_number": "string",
-    "address": "string",
-    "city_state_zip": "string",
-    "filing_status_single_or_married_separately": "boolean",
-    "filing_status_married_jointly_or_surviving_spouse": "boolean",
-    "filing_status_head_of_household": "boolean",
-    "step_2c_two_jobs_checkbox": "boolean",
-    "step_3a_qualifying_children_amount": "string",
-    "step_3b_other_dependents_amount": "string",
-    "step_3_total_credits": "string",
-    "step_4a_other_income": "string",
-    "step_4b_deductions": "string",
-    "step_4c_extra_withholding": "string",
-    "exempt_from_withholding_checkbox": "boolean",
-    "employer_name_address": "string",
-    "first_date_of_employment": "string",
-    "employer_ein": "string"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "first_name_middle_initial": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "last_name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "social_security_number": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "address": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "city_state_zip": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "filing_status_single_or_married_separately": {
+            "type": "boolean"
+        },
+        "filing_status_married_jointly_or_surviving_spouse": {
+            "type": "boolean"
+        },
+        "filing_status_head_of_household": {
+            "type": "boolean"
+        },
+        "step_2c_two_jobs_checkbox": {
+            "type": "boolean"
+        },
+        "step_3a_qualifying_children_amount": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "step_3b_other_dependents_amount": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "step_3_total_credits": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "step_4a_other_income": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "step_4b_deductions": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "step_4c_extra_withholding": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "exempt_from_withholding_checkbox": {
+            "type": "boolean"
+        },
+        "employer_name_address": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "first_date_of_employment": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "employer_ein": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "first_name_middle_initial",
+        "last_name",
+        "social_security_number",
+        "address",
+        "city_state_zip",
+        "filing_status_single_or_married_separately",
+        "filing_status_married_jointly_or_surviving_spouse",
+        "filing_status_head_of_household",
+        "step_2c_two_jobs_checkbox",
+        "step_3a_qualifying_children_amount",
+        "step_3b_other_dependents_amount",
+        "step_3_total_credits",
+        "step_4a_other_income",
+        "step_4b_deductions",
+        "step_4c_extra_withholding",
+        "exempt_from_withholding_checkbox",
+        "employer_name_address",
+        "first_date_of_employment",
+        "employer_ein"
+    ],
+    "additionalProperties": false
 }

@@ -1,25 +1,146 @@
 {
-    "name": "string",
-    "business_name": "string",
-    "individual_sole_proprietor": "boolean",
-    "c_corporation": "boolean",
-    "s_corporation": "boolean",
-    "partnership": "boolean",
-    "trust_estate": "boolean",
-    "llc": "boolean",
-    "llc_classification": "string",
-    "exempt_payee_code": "string",
-    "other": "boolean",
-    "other_entity_type": "string",
-    "fatca_exemption_code": "string",
-    "foreign_partners": "boolean",
-    "address": "string",
-    "city_state_zip": "string",
-    "requester_name_address": "string",
-    "account_numbers": "string",
-    "ssn_part_1": "string",
-    "ssn_part_2": "string",
-    "ssn_part_3": "string",
-    "ein_part_1": "string",
-    "ein_part_2": "string"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "business_name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "individual_sole_proprietor": {
+            "type": "boolean"
+        },
+        "c_corporation": {
+            "type": "boolean"
+        },
+        "s_corporation": {
+            "type": "boolean"
+        },
+        "partnership": {
+            "type": "boolean"
+        },
+        "trust_estate": {
+            "type": "boolean"
+        },
+        "llc": {
+            "type": "boolean"
+        },
+        "llc_classification": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "exempt_payee_code": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "other": {
+            "type": "boolean"
+        },
+        "other_entity_type": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "fatca_exemption_code": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "foreign_partners": {
+            "type": "boolean"
+        },
+        "address": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "city_state_zip": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "requester_name_address": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "account_numbers": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ssn_part_1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ssn_part_2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ssn_part_3": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ein_part_1": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ein_part_2": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "name",
+        "business_name",
+        "individual_sole_proprietor",
+        "c_corporation",
+        "s_corporation",
+        "partnership",
+        "trust_estate",
+        "llc",
+        "llc_classification",
+        "exempt_payee_code",
+        "other",
+        "other_entity_type",
+        "fatca_exemption_code",
+        "foreign_partners",
+        "address",
+        "city_state_zip",
+        "requester_name_address",
+        "account_numbers",
+        "ssn_part_1",
+        "ssn_part_2",
+        "ssn_part_3",
+        "ein_part_1",
+        "ein_part_2"
+    ],
+    "additionalProperties": false
 }

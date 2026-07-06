@@ -1,8 +1,10 @@
 description: "OCR Evaluation on Forms and Transcripts"
 
 prompts:
-#   - file://evals/html-prompt.txt
-  - file://evals/transcript-prompt.txt 
+  - id: file://evals/html-prompt.txt
+    label: html-stage
+  - id: file://evals/transcript-prompt.txt 
+    label: transcript-stage
 
 providers:
   - file://evals/basetenProvider.ts
@@ -16,93 +18,99 @@ defaultTest:
         apiKeyEnvar: OPENROUTER_KEY_1
 
 tests:
-  # ── Stage 1: HTML → Field Name Extraction ─────────────────────────────────
-  # - vars:
-  #     html_input: file://evals/html/w4.html
-  #     expected_output: file://evals/expected/field/w4.json
-  #   prompt: file://evals/html-prompt.txt
-  #   assert:
-  #     - type: llm-rubric
-  #       value: |
-  #         You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
-  #         Your task is to rate the actual JSON output against the expected ground truth JSON.
+  # # ── Stage 1: HTML → Field Name Extraction ─────────────────────────────────
+  - vars:
+      html_input: file://evals/html/w4.html
+      expected_output: file://evals/expected/field/w4.json
+    prompts:
+      - html-stage
+    assert:
+      - type: llm-rubric
+        value: |
+          You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
+          Your task is to rate the actual JSON output against the expected ground truth JSON.
 
-  #         CRITERIA FOR KEY MATCHING (Loosely Enforced):
-  #         - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
-  #         - Examples of valid matches (DO NOT PENALIZE):
-  #           * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
-  #           * 'step_4a_other_income_amount' matches 'step_4a_other_income'
-  #         - Focus heavily on whether the factual data values line up with corresponding semantic fields.
-  #         - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
+          CRITERIA FOR KEY MATCHING (Loosely Enforced):
+          - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
+          - Examples of valid matches (DO NOT PENALIZE):
+            * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
+            * 'step_4a_other_income_amount' matches 'step_4a_other_income'
+          - Focus heavily on whether the factual data values line up with corresponding semantic fields.
+          - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
 
-  #         EVALUATION STEPS:
-  #         1. Map keys from actual output to expected output based on loose semantic similarity.
-  #         2. Verify factual data values line up correctly across matched keys.
-  #         3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
+          EVALUATION STEPS:
+          1. Map keys from actual output to expected output based on loose semantic similarity.
+          2. Verify factual data values line up correctly across matched keys.
+          3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
 
-  #         Expected Ground Truth JSON:
-  #         {{expected_output}}
+          Expected Ground Truth JSON:
+          {{expected_output}}
 
-  # - vars:
-  #     html_input: file://evals/html/w9.html
-  #     expected_output: file://evals/expected/field/w9.json
-  #   prompt: file://evals/html-prompt.txt
-  #   assert:
-  #     - type: llm-rubric
-  #       value: |
-  #         You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
-  #         Your task is to rate the actual JSON output against the expected ground truth JSON.
+  - vars:
+      html_input: file://evals/html/w9.html
+      expected_output: file://evals/expected/field/w9.json
+    prompts:
+      - html-stage
+    assert:
+      - type: llm-rubric
+        value: |
+          You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
+          Your task is to rate the actual JSON output against the expected ground truth JSON.
 
-  #         CRITERIA FOR KEY MATCHING (Loosely Enforced):
-  #         - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
-  #         - Examples of valid matches (DO NOT PENALIZE):
-  #           * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
-  #           * 'step_4a_other_income_amount' matches 'step_4a_other_income'
-  #         - Focus heavily on whether the factual data values line up with corresponding semantic fields.
-  #         - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
+          CRITERIA FOR KEY MATCHING (Loosely Enforced):
+          - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
+          - Examples of valid matches (DO NOT PENALIZE):
+            * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
+            * 'step_4a_other_income_amount' matches 'step_4a_other_income'
+          - Focus heavily on whether the factual data values line up with corresponding semantic fields.
+          - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
 
-  #         EVALUATION STEPS:
-  #         1. Map keys from actual output to expected output based on loose semantic similarity.
-  #         2. Verify factual data values line up correctly across matched keys.
-  #         3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
+          EVALUATION STEPS:
+          1. Map keys from actual output to expected output based on loose semantic similarity.
+          2. Verify factual data values line up correctly across matched keys.
+          3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
 
-  #         Expected Ground Truth JSON:
-  #         {{expected_output}}
+          Expected Ground Truth JSON:
+          {{expected_output}}
 
-  # - vars:
-  #     html_input: file://evals/html/w1040.html
-  #     expected_output: file://evals/expected/field/w1040.json
-  #   prompt: file://evals/html-prompt.txt
-  #   assert:
-  #     - type: llm-rubric
-  #       value: |
-  #         You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
-  #         Your task is to rate the actual JSON output against the expected ground truth JSON.
+  - vars:
+      html_input: file://evals/html/w1040.html
+      expected_output: file://evals/expected/field/w1040.json
+    prompts:
+      - html-stage
+    assert:
+      - type: llm-rubric
+        value: |
+          You are an expert evaluation judge analyzing OCR field-name extraction accuracy.
+          Your task is to rate the actual JSON output against the expected ground truth JSON.
 
-  #         CRITERIA FOR KEY MATCHING (Loosely Enforced):
-  #         - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
-  #         - Examples of valid matches (DO NOT PENALIZE):
-  #           * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
-  #           * 'step_4a_other_income_amount' matches 'step_4a_other_income'
-  #           * 'other_tax_year_begin_date' or 'other_tax_year_end_date' are acceptable matches for tax year date fields.
-  #         - Focus heavily on whether the factual data values line up with corresponding semantic fields.
-  #         - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
+          CRITERIA FOR KEY MATCHING (Loosely Enforced):
+          - Do NOT require a perfect string match for JSON keys. 2-3 matching words are completely sufficient.
+          - Examples of valid matches (DO NOT PENALIZE):
+            * 'single_or_married_filing_separately' matches 'filing_status_single_or_married_separately'
+            * 'step_4a_other_income_amount' matches 'step_4a_other_income'
+            * 'other_tax_year_begin_date' or 'other_tax_year_end_date' are acceptable matches for tax year date fields.
+          - Focus heavily on whether the factual data values line up with corresponding semantic fields.
+          - Ignore missing suffix variations (e.g. missing '_yy' or '_amount') if core meaning is present.
 
-  #         EVALUATION STEPS:
-  #         1. Map keys from actual output to expected output based on loose semantic similarity.
-  #         2. Verify factual data values line up correctly across matched keys.
-  #         3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
+          EVALUATION STEPS:
+          1. Map keys from actual output to expected output based on loose semantic similarity.
+          2. Verify factual data values line up correctly across matched keys.
+          3. Do NOT penalize for minor naming discrepancies as long as core extracted facts are accurate.
 
-  #         Expected Ground Truth JSON:
-  #         {{expected_output}}
+          Expected Ground Truth JSON:
+          {{expected_output}}
 
-  # ── Stage 2: Transcript → Structured JSON Extraction ──────────────────────
+  # # ── Stage 2: Transcript → Structured JSON Extraction ──────────────────────
   - vars:
       transcript: file://evals/expected/transcript/chinese.txt
       schema: file://evals/schema/w9.json
       expected_output: file://evals/expected/transcript/w9.json
-    prompt: file://evals/transcript-prompt.txt
+    prompts:
+      - transcript-stage
     assert:
+      - type: contains-json
+        value: file://evals/schema/w9.json
       - type: llm-rubric
         value: |
           You are an expert evaluation judge for multilingual transcript data extraction.
@@ -131,8 +139,11 @@ tests:
       transcript: file://evals/expected/transcript/spanish.txt
       schema: file://evals/schema/w4.json
       expected_output: file://evals/expected/transcript/w4.json
-    prompt: file://evals/transcript-prompt.txt
+    prompts:
+     - transcript-stage
     assert:
+      - type: contains-json
+        value: file://evals/schema/w4.json
       - type: llm-rubric
         value: |
           You are an expert evaluation judge for multilingual transcript data extraction.
