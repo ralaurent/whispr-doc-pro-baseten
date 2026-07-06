@@ -36,6 +36,10 @@ export async function nameFieldsFromHtml(
 
   const combined = htmlPages.length > 0 ? `\n${htmlPages[0].html}` : "";
 
+  const expectedIds = Array.from(
+    combined.matchAll(/data-field-id="([^"]+)"/g)
+  ).map(m => m[1]);
+
   const trace = langfuse.trace({
     name: "Extract PDF Fields",
     input: combined.slice(0, 500) + "... (truncated)",
@@ -226,7 +230,13 @@ No markdown. No explanations. No code fences. Only the JSON object.
   trace.update({ output: out });
   await flushLangfuse();
 
-  console.log("out", out);
+  const missing = expectedIds.filter(id => !out[id]);
+
+  if (missing.length > 0) {
+    console.warn("Missing field IDs:", missing);
+
+    // TODO: Make missed fields red/orange for visual debugging
+  }
 
   return out;
 }

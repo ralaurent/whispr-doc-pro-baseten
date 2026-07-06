@@ -58,8 +58,9 @@ OUTPUT RULES
 - Output must be valid JSON only
 - Return ONLY JSON
 - You MUST return a key for every field in the schema
-- Return \`null\` for any missing fields (do not hallucinate data)
-- Boolean fields must be true/false only
+- Return \`null\` for any missing STRING fields (do not hallucinate data)
+- Boolean fields must always be \`true\` or \`false\`
+- If a checkbox or radio button is not selected or not mentioned, return \`false\`
 
 Schema:
 ${schemaDescription}
@@ -69,19 +70,21 @@ ${schemaDescription}
 
     if (provider === "baseten") {
         const properties: Record<string, any> = {};
-        const requiredFields: string[] = []; // Track all keys for the required array
+        const requiredFields: string[] = [];
 
         Object.entries(normalizedSchema).forEach(([key, type]) => {
-            properties[key] = {
-                type: [type, "null"]
-            };
-            requiredFields.push(key); // Force the schema to output this key
+            properties[key] =
+                type === "string"
+                    ? { type: ["string", "null"] }
+                    : { type: "boolean" };
+
+            requiredFields.push(key);
         });
 
         const requestSchema = {
             type: "object",
             properties: properties,
-            required: requiredFields, // Inject the required array here
+            required: requiredFields,
             additionalProperties: false,
         };
 
@@ -115,10 +118,9 @@ ${schemaDescription}
 
         Object.entries(normalizedSchema).forEach(([key, type]) => {
             if (type === "string") {
-                // Ensure Zod defaults to null if undefined
                 zodShape[key] = z.string().nullable().default(null);
             } else if (type === "boolean") {
-                zodShape[key] = z.boolean().nullable().default(null);
+                zodShape[key] = z.boolean().default(false);
             }
         });
 
