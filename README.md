@@ -186,8 +186,8 @@ WhisprDoc utilizes a **document-centric NoSQL database (Amazon DynamoDB)** optim
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/whisprdoc.git
-   cd whisprdoc
+   git clone https://github.com/ralaurent/whispr-doc-pro-baseten
+   cd whispr-doc-pro-baseten
    ```
 
 2. **Install dependencies:**
@@ -199,7 +199,6 @@ WhisprDoc utilizes a **document-centric NoSQL database (Amazon DynamoDB)** optim
    ```bash
    cp .env.example .env.local
    ```
-   *(Fill in your `BASETEN_API_KEY`, `LANGFUSE_PUBLIC_KEY`, `SUPABASE_URL`, and `AWS_ACCESS_KEY_ID`)*
 
 4. **Run the development server:**
    ```bash
