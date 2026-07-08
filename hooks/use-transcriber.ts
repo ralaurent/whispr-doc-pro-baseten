@@ -1,5 +1,5 @@
 // hooks/use-transcriber.ts
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { useWorker } from '@/hooks/use-worker'
 import { Transcriber, TranscriberData, WhisperModel } from '@/lib/types'
 
@@ -42,6 +42,14 @@ export function useTranscriber(): Transcriber {
                 break
         }
     })
+    useEffect(() => {
+        if (webWorker) {
+            webWorker.postMessage({
+                action: 'load',
+                model: 'onnx-community/lite-whisper-large-v3-turbo-ONNX'
+            })
+        }
+    }, [webWorker])
 
     const onInputChange = useCallback(() => {
         setOutput(undefined)

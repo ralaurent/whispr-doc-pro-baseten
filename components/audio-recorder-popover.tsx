@@ -85,7 +85,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
     } = useSpeechRecognition()
 
     const isRecording = transcriptionMode === "web-speech" ? isRecordingWebSpeech : isRecordingWhisper;
-    const isTranscribing = transcriptionMode === "web-speech" ? false : (transcriber.isProcessing || transcriber.isModelLoading);
+    const isTranscribing = transcriptionMode === "web-speech" ? false : transcriber.isProcessing;
 
     const isBusy = isFinalizing || isTranscribing;
 
@@ -139,7 +139,6 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
             if (currentMode === "web-speech") {
                 resetWebSpeech()
-                // Update to map the correct BCP-47 tag from your LANGUAGES array
                 const selectedLangObj = LANGUAGES.find(l => l.code === currentLang)
                 SpeechRecognition.startListening({
                     continuous: true,
@@ -186,7 +185,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
 
     const handleConfirm = async () => {
         if (transcriptionMode === "web-speech") {
-            setIsFinalizing(true) // NEW
+            setIsFinalizing(true)
             SpeechRecognition.stopListening()
 
             setTimeout(() => {
@@ -272,10 +271,10 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                 }
 
                 transcriber.start(audioBuffer, model as any, language);
-                setIsFinalizing(false) // NEW
+                setIsFinalizing(false)
             } catch (error) {
                 console.error("Error decoding audio data", error);
-                setIsFinalizing(false) // NEW
+                setIsFinalizing(false)
             }
         }
     };
@@ -284,7 +283,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
         ? `Loading Model... ${Math.round(transcriber.modelLoadingProgress || 0)}%`
         : transcriber.isProcessing
             ? "Transcribing..."
-            : "Finishing up..."; // NEW: covers the isFinalizing-only phase
+            : "Finishing up...";
 
     const filteredLanguages = LANGUAGES.filter(l =>
         l.name.toLowerCase().includes(langSearch.toLowerCase())
@@ -504,7 +503,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs text-muted-foreground">More accurate (multilingual)</span>
+                                            <span className="text-xs text-muted-foreground">Slower • More accurate</span>
                                         </div>
                                     </div>
                                     {transcriptionMode === "whisper-large" && <Check className="h-4 w-4 text-primary" />}
