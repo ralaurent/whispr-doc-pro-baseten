@@ -214,6 +214,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Uploaded file must be a PDF." }, { status: 400 })
     }
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      return new Response(JSON.stringify({ error: 'File exceeds 10MB limit' }), { status: 413 });
+    }
+
     const arrayBuffer = await file.arrayBuffer()
     const bytes = new Uint8Array(arrayBuffer)
 
