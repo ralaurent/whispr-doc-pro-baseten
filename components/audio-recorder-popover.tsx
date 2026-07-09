@@ -30,6 +30,7 @@ const LANGUAGES = [
     { code: "pt", name: "Portuguese", speechLang: "pt-BR" },
     { code: "fr", name: "French", speechLang: "fr-FR" },
     { code: "ja", name: "Japanese", speechLang: "ja-JP" },
+    { code: "zh", name: "Chinese (Mandarin)", speechLang: "zh-CN" },
     { code: "nl", name: "Dutch", speechLang: "nl-NL" },
     { code: "pl", name: "Polish", speechLang: "pl-PL" },
     { code: "ru", name: "Russian", speechLang: "ru-RU" },
@@ -53,6 +54,19 @@ const LANGUAGES = [
     { code: "ms", name: "Malay", speechLang: "ms-MY" },
     { code: "th", name: "Thai", speechLang: "th-TH" },
     { code: "hi", name: "Hindi", speechLang: "hi-IN" },
+    { code: "bn", name: "Bengali", speechLang: "bn-BD" },
+    { code: "ta", name: "Tamil", speechLang: "ta-IN" },
+    { code: "te", name: "Telugu", speechLang: "te-IN" },
+    { code: "mr", name: "Marathi", speechLang: "mr-IN" },
+    { code: "ur", name: "Urdu", speechLang: "ur-PK" },
+    { code: "fa", name: "Persian (Farsi)", speechLang: "fa-IR" },
+    { code: "sr", name: "Serbian", speechLang: "sr-RS" },
+    { code: "hr", name: "Croatian", speechLang: "hr-HR" },
+    { code: "sk", name: "Slovak", speechLang: "sk-SK" },
+    { code: "sl", name: "Slovenian", speechLang: "sl-SI" },
+    { code: "lt", name: "Lithuanian", speechLang: "lt-LT" },
+    { code: "lv", name: "Latvian", speechLang: "lv-LV" },
+    { code: "et", name: "Estonian", speechLang: "et-EE" },
 ]
 
 interface AudioRecorderProps {
@@ -503,7 +517,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs text-muted-foreground">Slower • More accurate</span>
+                                            <span className="text-xs text-muted-foreground">Slower • Most accurate</span>
                                         </div>
                                     </div>
                                     {transcriptionMode === "whisper-large" && <Check className="h-4 w-4 text-primary" />}

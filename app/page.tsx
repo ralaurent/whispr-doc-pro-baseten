@@ -58,7 +58,6 @@ export default function LandingPage() {
 
       <main className="pt-24">
         {/* Hero Section */}
-        {/* Hero Section */}
         <section className="relative px-6 max-w-7xl mx-auto py-16 flex flex-col items-center justify-center text-center min-h-[70vh]">
           {/* Background Decorative Shader */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#4648d4]/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -66,7 +65,7 @@ export default function LandingPage() {
           <div className="z-10 flex flex-col items-center max-w-4xl mx-auto">
             <div className="inline-flex items-center space-x-2 bg-[#d5e3fc] text-[#57657a] px-4 py-1 rounded-full mb-6">
               <Sparkles className="w-4 h-4" />
-              <span className="text-[12px] leading-[14px] font-medium">Now with 28+ Language Support</span>
+              <span className="text-[12px] leading-[14px] font-medium">Now with 40+ Languages Supported</span>
             </div>
 
             <h1 className="text-[40px] leading-[48px] tracking-[-0.02em] font-bold text-[#1b1b23] mb-6 sm:text-[48px] sm:leading-[56px] lg:text-[64px] lg:leading-[72px]">
