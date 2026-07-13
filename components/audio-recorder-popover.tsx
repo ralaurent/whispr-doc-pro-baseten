@@ -21,6 +21,7 @@ import { AudioVisualizer } from "./audio-visualizer"
 import { cn } from "@/lib/utils"
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import { useTranscriber } from '@/hooks/use-transcriber'
+import { useTiming } from '@/contexts/timing-context'
 
 const LANGUAGES = [
     { code: "en", name: "English", speechLang: "en-US" },
@@ -73,9 +74,16 @@ interface AudioRecorderProps {
     onTranscript?: (text: string) => void;
     mode?: "web-speech" | "whisper-tiny" | "whisper-large";
     isLoading?: boolean;
+    transcriber: ReturnType<typeof useTranscriber>;
 }
 
-export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = false }: AudioRecorderProps) {
+export function AudioRecorder({
+    onTranscript,
+    mode = "web-speech",
+    isLoading = false,
+    transcriber
+}: AudioRecorderProps) {
+    const { markStart } = useTiming()
     const [isOpen, setIsOpen] = useState(false)
     const [transcriptionMode, setTranscriptionMode] = useState<"web-speech" | "whisper-tiny" | "whisper-large">(mode as any)
     const [language, setLanguage] = useState<string>("en")
@@ -89,8 +97,6 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
     const [isFinalizing, setIsFinalizing] = useState(false)
 
     const transcriptRef = useRef("");
-
-    const transcriber = useTranscriber()
 
     const {
         transcript: webSpeechTranscript,
@@ -238,6 +244,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                         }
 
                         transcriber.start(audioBuffer, model as any, language)
+                        markStart('total-pipeline')
                         setIsFinalizing(false)
                     } catch (e) {
                         console.error("Error decoding audio data", e)
@@ -285,6 +292,7 @@ export function AudioRecorder({ onTranscript, mode = "web-speech", isLoading = f
                 }
 
                 transcriber.start(audioBuffer, model as any, language);
+                markStart('total-pipeline')
                 setIsFinalizing(false)
             } catch (error) {
                 console.error("Error decoding audio data", error);
