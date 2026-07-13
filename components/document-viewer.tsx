@@ -44,6 +44,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useTranscriber } from "@/hooks/use-transcriber"
 import FileTypes from "./icons/file-types"
 import { AutosaveStatus } from "./autosave-status"
 
@@ -56,8 +57,9 @@ import { detectFieldAtPositionAction, processTranscriptAction } from "@/app/acti
 import { PdfViewer } from "./pdf-viewer"
 import { AudioRecorder } from "./audio-recorder-popover"
 import { toast } from "sonner"
+import { useTiming } from "@/contexts/timing-context"
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
 interface DocumentViewerProps {
   currentPage: number
@@ -122,6 +124,8 @@ export function DocumentViewer({
   onTranscribingChange,
   organizationId,
 }: DocumentViewerProps) {
+  const transcriber = useTranscriber()
+  const { markEnd } = useTiming()
   const [isLocalDragging, setIsLocalDragging] = useState(false)
   const [isGlobalDragging, setIsGlobalDragging] = useState(false)
   const [isWandActive, setIsWandActive] = useState(false)
@@ -793,6 +797,7 @@ export function DocumentViewer({
         // Save a revision after a successful transcription
         saveCurrentVersion("ai-transcribe");
       }
+      markEnd('total-pipeline', 'Total pipeline')
     } catch (error) {
       console.error("Failed to process transcript:", error);
     } finally {
@@ -975,6 +980,7 @@ export function DocumentViewer({
                       <AudioRecorder
                         onTranscript={handleTranscript}
                         isLoading={isLoading || isTranscribing}
+                        transcriber={transcriber}
                       />
                     </div>
                   </PopoverContent>

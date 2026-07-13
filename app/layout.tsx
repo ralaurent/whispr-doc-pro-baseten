@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { TimingProvider } from '@/contexts/timing-context'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -39,7 +40,10 @@ export default function RootLayout({
       <body
         className={`font-sans antialiased`}
         suppressHydrationWarning={true}
-      >        {children}
+      >
+        <TimingProvider>
+          {children}
+        </TimingProvider>
         <Analytics />
       </body>
     </html>

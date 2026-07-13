@@ -27,7 +27,7 @@ import SignaturePad from "./signature-pad"
 import { IMaskInput } from "react-imask"
 import { cn } from "@/lib/utils"
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
 interface HighlightRect {
   left: number
@@ -434,14 +434,11 @@ export function PdfViewer({
     return { data: new Uint8Array(safeBuffer) };
   }, [pdfData]);
 
-  // When the document source changes, react-pdf tears down the previous
-  // PDFDocumentProxy and loads a new one. Drop the stale proxy first so the
-  // <Page> below (gated on `pdfDocument`) unmounts before the reload, instead
-  // of calling getPage() on a destroyed worker transport — which surfaces as
-  // "Cannot read properties of null (reading 'sendWithPromise')".
   useEffect(() => {
     setPdfDocument(null)
   }, [fileSource])
+
+  const documentKey = useMemo(() => `doc-${Date.now()}-${Math.random()}`, [fileSource]);
 
   useEffect(() => {
     resizePreviewRef.current = resizePreview
@@ -1334,6 +1331,7 @@ export function PdfViewer({
             }}>
             {fileSource ? (
               <Document
+                key={documentKey}
                 file={fileSource}
                 onLoadSuccess={onDocumentLoadSuccess}
                 loading={

@@ -2,8 +2,10 @@
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { useWorker } from '@/hooks/use-worker'
 import { Transcriber, TranscriberData, WhisperModel } from '@/lib/types'
+import { useTiming } from '@/contexts/timing-context'
 
 export function useTranscriber(): Transcriber {
+    const { markStart, markEnd } = useTiming()
     const [output, setOutput] = useState<TranscriberData | undefined>()
     const [isProcessing, setIsProcessing] = useState(false)
     const [isModelLoading, setIsModelLoading] = useState(false)
@@ -23,12 +25,15 @@ export function useTranscriber(): Transcriber {
             case 'complete':
                 setOutput(message.data)
                 setIsProcessing(false)
+                markEnd('transcribe-audio', 'Transcribe the audio')
                 break
             case 'initiate':
                 setIsModelLoading(true)
+                markStart('download-model')
                 break
             case 'ready':
                 setIsModelLoading(false)
+                markEnd('download-model', 'Download the model')
                 break
             case 'error':
                 console.error('[useTranscriber] Worker error:', message.data)
@@ -62,6 +67,7 @@ export function useTranscriber(): Transcriber {
                 setOutput(undefined)
                 setError(null) // clear any previous error before each new transcription
                 setIsProcessing(true)
+                markStart('transcribe-audio')
 
                 let audio: Float32Array
                 if (audioData.numberOfChannels === 2) {
@@ -76,7 +82,11 @@ export function useTranscriber(): Transcriber {
                     audio = audioData.getChannelData(0)
                 }
 
-                webWorker?.postMessage({ audio, model, language })
+                // webWorker?.postMessage({ audio, model, language })
+                webWorker?.postMessage(
+                    { audio, model, language },
+                    [audio.buffer]
+                )
             }
         },
         [webWorker]
