@@ -35,6 +35,11 @@ export function useTranscriber(): Transcriber {
                 setIsModelLoading(false)
                 markEnd('download-model', 'Download the model')
                 break
+            case 'warmup-complete':
+                console.debug(
+                    `[useTranscriber] Warmed up ${message.model} in ${Math.round(message.elapsedMs)}ms`
+                )
+                break
             case 'error':
                 console.error('[useTranscriber] Worker error:', message.data)
                 setError(message.data)
@@ -47,11 +52,16 @@ export function useTranscriber(): Transcriber {
                 break
         }
     })
+
     useEffect(() => {
         if (webWorker) {
             webWorker.postMessage({
                 action: 'load',
                 model: 'onnx-community/lite-whisper-large-v3-turbo-ONNX'
+            })
+            webWorker.postMessage({
+                action: 'load',
+                model: 'Xenova/whisper-tiny.en'
             })
         }
     }, [webWorker])
@@ -82,7 +92,6 @@ export function useTranscriber(): Transcriber {
                     audio = audioData.getChannelData(0)
                 }
 
-                // webWorker?.postMessage({ audio, model, language })
                 webWorker?.postMessage(
                     { audio, model, language },
                     [audio.buffer]
