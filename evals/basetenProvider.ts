@@ -6,6 +6,10 @@ import path from 'path';
 // Ensure environment variables are loaded
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
+if (!process.env.BASETEN_API_KEY) {
+  throw new Error('BASETEN_API_KEY is not set — check GitHub Actions secrets.');
+}
+
 const baseten = createOpenAI({
   baseURL: 'https://inference.baseten.co/v1',
   apiKey: process.env.BASETEN_API_KEY,

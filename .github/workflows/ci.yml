@@ -28,3 +28,4 @@ jobs:
       run: npx promptfoo@latest eval
       env:
         OPENROUTER_KEY_1: ${{ secrets.OPENROUTER_KEY_1 }}
+        BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
